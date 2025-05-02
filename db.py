@@ -1,24 +1,21 @@
 from mysql.connector import connect, Error
 from dotenv import load_dotenv
 import os
-import json
 
-# Load environment variables
+# Load environment variables from .env file for DB credentials
 load_dotenv()
 
-ACCOUNTS_FILE = "accounts.json"
-
-def load_accounts():
-    # Optionally, you can remove this if you no longer use the JSON file
-    return {}
-
 def check_credentials(account_number, pin):
+    """
+    Checks if the provided account_number and pin match a user in the database.
+    Returns True if credentials are correct, False otherwise.
+    """
     connection = connect_db()
     if not connection:
         return False
     try:
         with connection.cursor() as cursor:
-            # Debug print
+            # Debug print for tracing input values
             print(f"Checking credentials for account_number={account_number}, pin={pin}")
             query = "SELECT account_number, pin FROM users WHERE account_number = %s"
             cursor.execute(query, (account_number,))
@@ -35,6 +32,10 @@ def check_credentials(account_number, pin):
         connection.close()
 
 def connect_db():
+    """
+    Establishes a connection to the MySQL database using environment variables.
+    Returns the connection object or None if connection fails.
+    """
     try:
         connection = connect(
             host=os.getenv("DB_HOST", "localhost"),
@@ -49,6 +50,10 @@ def connect_db():
         return None
 
 def create_account(account_number, pin, name, date_of_birth, user_type="customer", initial_balance=0.00):
+    """
+    Creates a new account in the database with the provided details.
+    Ensures the PIN is not longer than 4 characters.
+    """
     # Ensure PIN is not longer than 4 characters
     if len(str(pin)) > 4:
         print("Error: PIN must be at most 4 digits.")
@@ -79,6 +84,10 @@ def create_account(account_number, pin, name, date_of_birth, user_type="customer
         connection.close()
 
 def get_balance(account_number):
+    """
+    Retrieves the balance for the given account_number from the database.
+    Returns the balance or 0.0 if the account is not found.
+    """
     connection = connect_db()
     if not connection:
         return None
@@ -97,6 +106,10 @@ def get_balance(account_number):
         connection.close()
 
 def deposit(account_number, amount):
+    """
+    Deposits the specified amount into the account with the given account_number.
+    Returns True if the deposit is successful, False otherwise.
+    """
     if amount <= 0:
         print("Deposit amount must be positive.")
         return False
@@ -119,6 +132,10 @@ def deposit(account_number, amount):
         connection.close()
 
 def withdraw(account_number, amount):
+    """
+    Withdraws the specified amount from the account with the given account_number.
+    Returns True if the withdrawal is successful, False otherwise.
+    """
     if amount <= 0:
         print("Withdrawal amount must be positive.")
         return False
@@ -146,6 +163,10 @@ def withdraw(account_number, amount):
         connection.close()
 
 def get_account_name(account_number):
+    """
+    Retrieves the name associated with the given account_number from the database.
+    Returns the name or an empty string if the account is not found.
+    """
     connection = connect_db()
     if not connection:
         return ""
@@ -164,6 +185,10 @@ def get_account_name(account_number):
         connection.close()
 
 def update_balance(account_number, new_balance):
+    """
+    Updates the balance for the given account_number in the database.
+    Returns True if the update is successful, False otherwise.
+    """
     connection = connect_db()
     if not connection:
         return False
